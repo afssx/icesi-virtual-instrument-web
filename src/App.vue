@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import { WebMidi } from 'webmidi'
@@ -8,11 +9,11 @@ const note = ref('')
 
 const currentNotes = reactive([])
 
-if (navigator.requestMIDIAccess) {
-  console.log('This browser supports WebMIDI!')
-} else {
-  console.log('WebMIDI is not supported in this browser.')
-}
+// if (navigator.requestMIDIAccess) {
+//   console.log('This browser supports WebMIDI!')
+// } else {
+//   console.log('WebMIDI is not supported in this browser.')
+// }
 
 WebMidi.enable()
   .then(onEnabled)
