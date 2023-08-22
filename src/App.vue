@@ -1,19 +1,12 @@
 <script setup lang="ts">
-// @ts-nocheck
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { WebMidi } from 'webmidi'
+import { WebMidi, type NoteMessageEvent } from 'webmidi'
 import { reactive, ref } from 'vue'
 
 const note = ref('')
 
-const currentNotes = reactive([])
-
-// if (navigator.requestMIDIAccess) {
-//   console.log('This browser supports WebMIDI!')
-// } else {
-//   console.log('WebMIDI is not supported in this browser.')
-// }
+const currentNotes = reactive<any[]>([])
 
 WebMidi.enable()
   .then(onEnabled)
@@ -37,7 +30,7 @@ function onEnabled() {
   var input = WebMidi.inputs[0]
 
   // Listen for a 'note on' message on all channels
-  input.addListener('noteon', 'all', function (e) {
+  input.addListener('noteon', function (e: NoteMessageEvent) {
     console.log(e)
     let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
     // note.value = currentNote
@@ -50,7 +43,7 @@ function onEnabled() {
   })
 
   // Listen for a 'note on' message on all channels
-  input.addListener('noteoff', 'all', function (e) {
+  input.addListener('noteoff', function (e: NoteMessageEvent) {
     let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
 
     const index = currentNotes.indexOf(currentNote)
@@ -68,14 +61,14 @@ function onEnabled() {
   })
 
   // Listen to pitch bend message on channel 3
-  input.addListener('pitchbend', 1, function (e) {
-    console.log("Received 'pitchbend' message.", e)
-  })
+  // input.addListener('pitchbend', 1, function (e) {
+  //   console.log("Received 'pitchbend' message.", e)
+  // })
 
   // Listen to control change message on all channels
-  input.addListener('controlchange', 'all', function (e) {
-    console.log("Received 'controlchange' message.", e)
-  })
+  // input.addListener('controlchange', 'all', function (e) {
+  //   console.log("Received 'controlchange' message.", e)
+  // })
 
   // Remove all listeners for 'noteoff' on all channels
   // input.removeListener('noteoff')
