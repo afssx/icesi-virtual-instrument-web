@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 import { WebMidi, type NoteMessageEvent } from 'webmidi'
 import { reactive, ref } from 'vue'
 
 const note = ref('')
 
 const currentNotes = reactive<any[]>([])
+const availableDevices = reactive<any[]>([])
 
 WebMidi.enable()
   .then(onEnabled)
@@ -17,12 +16,15 @@ console.log('Enable')
 function onEnabled() {
   // Viewing available inputs and outputs
   console.log(WebMidi.inputs)
-  console.log(WebMidi.outputs)
+  // console.log(WebMidi.outputs)
   // Inputs
   WebMidi.inputs.forEach((input) => console.log(input.manufacturer, input.name))
+  WebMidi.inputs.forEach((input, index) => {
+    availableDevices.push({ name: input.name, index })
+  })
 
   // Outputs
-  WebMidi.outputs.forEach((output) => console.log(output.manufacturer, output.name))
+  // WebMidi.outputs.forEach((output) => console.log(output.manufacturer, output.name))
   // Retrieve an input by name, id or index
   // var input = WebMidi.getInputByName("My Awesome Keyboard");
 
@@ -80,6 +82,12 @@ function onEnabled() {
 
 <template>
   <div class="ui">
+    <label for="device">Midi Device: </label>
+    <select class="form-control" id="device">
+      <option :key="device.index" v-for="device in availableDevices" :value="device.index">
+        {{ device.name }}
+      </option>
+    </select>
     <h2 style="color: rebeccapurple">{{ note }}</h2>
     <h2 style="color: rebeccapurple">{{ currentNotes }}</h2>
   </div>
@@ -107,6 +115,9 @@ function onEnabled() {
   background-size: cover;
   background-repeat: no-repeat;
   border: solid;
+}
+label {
+  color: #010101;
 }
 header {
   line-height: 1.5;
