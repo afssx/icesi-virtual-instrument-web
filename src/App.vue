@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { WebMidi, type NoteMessageEvent } from 'webmidi'
 import { reactive, ref } from 'vue'
+import * as Tone from 'tone'
 
 const note = ref('')
 
@@ -28,39 +29,57 @@ function onEnabled() {
   // Retrieve an input by name, id or index
   // var input = WebMidi.getInputByName("My Awesome Keyboard");
 
+  const sampler = new Tone.Sampler({
+    urls: {
+      C4: '_C4.mp3',
+      D4: '_D4.mp3',
+      A4: '_A4.mp3'
+    },
+    release: 1,
+    baseUrl: ''
+  }).toDestination()
+
   // input = WebMidi.getInputById("1809568182");
+  if (WebMidi.inputs.length == 0) {
+    alert('No hay ningun dispotivo MIDI conectado')
+  }
   var input = WebMidi.inputs[0]
+  if (input) {
+    Tone.loaded().then(() => {
+      // Listen for a 'note on' message on all channels
+      input.addListener('noteon', function (e: NoteMessageEvent) {
+        console.log(e)
+        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+        // note.value = currentNote
+        if (!currentNotes.includes(currentNote)) {
+          currentNotes.push(currentNote)
+        }
+        currentNotes.sort()
+        sampler.triggerAttackRelease([currentNote], 4)
+        // const audio = new Audio(`_${currentNote}.mp3`)
+        // audio.play()
+        // console.log("Received 'noteon' message (" + currentNote + ').')
+      })
 
-  // Listen for a 'note on' message on all channels
-  input.addListener('noteon', function (e: NoteMessageEvent) {
-    console.log(e)
-    let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-    // note.value = currentNote
-    if (!currentNotes.includes(currentNote)) {
-      currentNotes.push(currentNote)
-    }
-    currentNotes.sort()
+      // Listen for a 'note on' message on all channels
+      input.addListener('noteoff', function (e: NoteMessageEvent) {
+        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
 
-    // console.log("Received 'noteon' message (" + currentNote + ').')
-  })
-
-  // Listen for a 'note on' message on all channels
-  input.addListener('noteoff', function (e: NoteMessageEvent) {
-    let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-
-    const index = currentNotes.indexOf(currentNote)
-    if (index > -1) {
-      currentNotes.splice(index, 1)
-    }
-    // console.log(e)
-    // console.log(
-    //   "Received 'noteoff' message (" +
-    //     e.note.name +
-    //     (e.note.accidental ?? '') +
-    //     e.note.octave +
-    //     ').'
-    // )
-  })
+        const index = currentNotes.indexOf(currentNote)
+        if (index > -1) {
+          currentNotes.splice(index, 1)
+        }
+        // console.log(e)
+        // console.log(
+        //   "Received 'noteoff' message (" +
+        //     e.note.name +
+        //     (e.note.accidental ?? '') +
+        //     e.note.octave +
+        //     ').'
+        // )
+      })
+    })
+  }
 
   // Listen to pitch bend message on channel 3
   // input.addListener('pitchbend', 1, function (e) {
