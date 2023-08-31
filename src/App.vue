@@ -101,7 +101,7 @@ function onEnabled() {
   // Remove all listeners on the input
   // input.removeListener()
   const knob = document.querySelector('.knob')
-  knob.addEventListener('mousedown', startDrag)
+  knob?.addEventListener('mousedown', startDrag)
   window.addEventListener('mouseup', endDrag)
   // window.addEventListener('mousemove', drag)
   window.addEventListener('mousemove', (event) => {
@@ -115,7 +115,7 @@ function onEnabled() {
 const isDragging = ref(false)
 const prevMouseAngle = ref(0)
 
-const startDrag = (event) => {
+const startDrag = (event: any) => {
   isDragging.value = true
   prevMouseAngle.value = getMouseAngle(event)
 }
@@ -124,7 +124,7 @@ const endDrag = () => {
   isDragging.value = false
 }
 
-const drag = (event, knobRotation) => {
+const drag = (event: any, knobRotation: any) => {
   if (isDragging.value) {
     const mouseAngle = getMouseAngle(event)
     const angleDiff = mouseAngle - prevMouseAngle.value
@@ -139,14 +139,17 @@ const drag = (event, knobRotation) => {
   }
 }
 
-const getMouseAngle = (event) => {
+const getMouseAngle = (event: any) => {
   const knob = document.querySelector('.knob')
-  const knobRect = knob.getBoundingClientRect()
-  const knobCenterX = knobRect.left + knobRect.width / 2
-  const knobCenterY = knobRect.top + knobRect.height / 2
-  const mouseAngle =
-    Math.atan2(event.clientY - knobCenterY, event.clientX - knobCenterX) * (180 / Math.PI)
-  return mouseAngle < 0 ? mouseAngle + 360 : mouseAngle
+  if (knob) {
+    const knobRect = knob?.getBoundingClientRect()
+    const knobCenterX = knobRect.left + knobRect.width / 2
+    const knobCenterY = knobRect.top + knobRect.height / 2
+    const mouseAngle =
+      Math.atan2(event.clientY - knobCenterY, event.clientX - knobCenterX) * (180 / Math.PI)
+    return mouseAngle < 0 ? mouseAngle + 360 : mouseAngle
+  }
+  return 0
 }
 </script>
 
