@@ -47,7 +47,7 @@ function onEnabled() {
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
-  var input = WebMidi.inputs[1]
+  var input = WebMidi.inputs[0] // Primer Input seleccionada
   if (input) {
     Tone.loaded().then(() => {
       // Listen for a 'note on' message on all channels
