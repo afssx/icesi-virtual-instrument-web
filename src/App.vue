@@ -13,7 +13,10 @@ WebMidi.enable()
   .catch((err) => alert(err))
 
 console.log('Enable')
-
+const knobRotation1 = ref(0)
+const knobRotation2 = ref(0)
+const knobRotation3 = ref(0)
+const knobRotation4 = ref(0)
 function onEnabled() {
   // Viewing available inputs and outputs
   console.log(WebMidi.inputs)
@@ -31,9 +34,10 @@ function onEnabled() {
 
   const sampler = new Tone.Sampler({
     urls: {
-      C4: '_C4.mp3',
-      D4: '_D4.mp3',
-      A4: '_A4.mp3'
+      C4: '_C4.L.mp3',
+      'D#4': '_D#4.L.mp3',
+      'F#4': '_F#4.L.mp3',
+      A4: '_A4.L.mp3'
     },
     release: 1,
     baseUrl: ''
@@ -43,7 +47,7 @@ function onEnabled() {
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
-  var input = WebMidi.inputs[0]
+  var input = WebMidi.inputs[1]
   if (input) {
     Tone.loaded().then(() => {
       // Listen for a 'note on' message on all channels
@@ -96,11 +100,73 @@ function onEnabled() {
 
   // Remove all listeners on the input
   // input.removeListener()
+  const knob = document.querySelector('.knob')
+  knob.addEventListener('mousedown', startDrag)
+  window.addEventListener('mouseup', endDrag)
+  // window.addEventListener('mousemove', drag)
+  window.addEventListener('mousemove', (event) => {
+    drag(event, knobRotation1)
+    drag(event, knobRotation2)
+    drag(event, knobRotation3)
+    drag(event, knobRotation4)
+  })
+}
+
+const isDragging = ref(false)
+const prevMouseAngle = ref(0)
+
+const startDrag = (event) => {
+  isDragging.value = true
+  prevMouseAngle.value = getMouseAngle(event)
+}
+
+const endDrag = () => {
+  isDragging.value = false
+}
+
+const drag = (event, knobRotation) => {
+  if (isDragging.value) {
+    const mouseAngle = getMouseAngle(event)
+    const angleDiff = mouseAngle - prevMouseAngle.value
+    knobRotation.value += angleDiff
+    prevMouseAngle.value = mouseAngle
+
+    if (knobRotation.value >= 360) {
+      knobRotation.value -= 360
+    } else if (knobRotation.value < 0) {
+      knobRotation.value += 360
+    }
+  }
+}
+
+const getMouseAngle = (event) => {
+  const knob = document.querySelector('.knob')
+  const knobRect = knob.getBoundingClientRect()
+  const knobCenterX = knobRect.left + knobRect.width / 2
+  const knobCenterY = knobRect.top + knobRect.height / 2
+  const mouseAngle =
+    Math.atan2(event.clientY - knobCenterY, event.clientX - knobCenterX) * (180 / Math.PI)
+  return mouseAngle < 0 ? mouseAngle + 360 : mouseAngle
 }
 </script>
 
 <template>
   <div class="ui">
+    <div class="marimba"></div>
+    <div class="compressor">
+      <div class="knob attack">
+        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation1 + 'deg)' }"></div>
+      </div>
+      <div class="knob release">
+        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation2 + 'deg)' }"></div>
+      </div>
+      <div class="knob threshold">
+        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation3 + 'deg)' }"></div>
+      </div>
+      <div class="knob ratio">
+        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation4 + 'deg)' }"></div>
+      </div>
+    </div>
     <label for="device">Midi Device: </label>
     <select class="form-control" id="device">
       <option :key="device.index" v-for="device in availableDevices" :value="device.index">
@@ -109,6 +175,9 @@ function onEnabled() {
     </select>
     <h2 style="color: rebeccapurple">{{ note }}</h2>
     <h2 style="color: rebeccapurple">{{ currentNotes }}</h2>
+    <div class="patterns">
+      <input type="number" name="bpm" id="bpmInput" value="100" />
+    </div>
   </div>
   <!-- <header>
     <img class="logo" src="@/assets/UI.jpeg" width="125" height="125" />
@@ -126,14 +195,83 @@ function onEnabled() {
   <!-- <RouterView /> -->
 </template>
 
-<style scoped>
+<style>
+.knob {
+  width: 70px;
+  height: 70px;
+  top: 42px;
+  left: 28px;
+  /* background-color: #e0e0e0; */
+  /* border-radius: 50%; */
+  position: relative;
+  overflow: hidden;
+  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); */
+}
+
+.knob-handle {
+  width: 70px;
+  height: 70px;
+  background-image: url(assets/Knob/Group75.png);
+  background-size: contain;
+  position: absolute;
+  /* top: 50%;
+  left: 50%; */
+  /* transform: translate(-50%, -50%); */
+  /* border-radius: 5px; */
+}
+.release {
+  top: 53px;
+}
+
+.threshold {
+  top: 64px;
+}
+.ratio {
+  top: 75px;
+}
+
 .ui {
-  background-image: url(assets/UI.jpeg);
-  width: 1024px;
-  height: 768px;
+  background-image: url(assets/Frame.png);
+  width: 1145px;
+  height: 739px;
   background-size: cover;
   background-repeat: no-repeat;
-  border: solid;
+  position: relative;
+}
+.patterns {
+  background-image: url(assets/Patrones.png);
+  width: 449px;
+  height: 197px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
+  top: 440px;
+  left: 30px;
+}
+.patterns > input {
+  position: absolute;
+  right: 100px;
+  width: 70px;
+  font-size: 22px;
+  top: 120px;
+  text-align: right;
+  border: none;
+}
+.marimba {
+  background-image: url(assets/marimba/Frame.png);
+  width: 836px;
+  height: 327px;
+  position: absolute;
+  top: 40px;
+  left: 80px;
+}
+.compressor {
+  background-image: url(assets/Compresor.png);
+  width: 126px;
+  height: 386px;
+  position: absolute;
+  right: 40px;
+  top: 40px;
 }
 label {
   color: #010101;
