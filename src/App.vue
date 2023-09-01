@@ -1,22 +1,38 @@
 <script setup lang="ts">
-import { WebMidi, type NoteMessageEvent } from 'webmidi'
-import { reactive, ref } from 'vue'
+import { WebMidi, type NoteMessageEvent, Input } from 'webmidi'
+import { reactive, ref, watch } from 'vue'
 import * as Tone from 'tone'
-
-const note = ref('')
 
 const currentNotes = reactive<any[]>([])
 const availableDevices = reactive<any[]>([])
-
-WebMidi.enable()
-  .then(onEnabled)
-  .catch((err) => alert(err))
+const selectedDevice = ref<number | null>(null)
 
 console.log('Enable')
 const knobRotation1 = ref(0)
 const knobRotation2 = ref(0)
 const knobRotation3 = ref(0)
 const knobRotation4 = ref(0)
+let samplerIsReady = false
+const sampler = new Tone.Sampler({
+  urls: {
+    C3: '_C4.L.mp3',
+    'D#3': '_Ds4.L.mp3',
+    'F#3': '_Fs4.L.mp3',
+    A3: '_A4.L.mp3'
+  },
+
+  release: 1,
+  baseUrl: ''
+}).toDestination()
+
+Tone.loaded().then(() => {
+  samplerIsReady = true
+  console.log('Is ready')
+})
+WebMidi.enable()
+  .then(onEnabled)
+  .catch((err) => alert(err))
+availableDevices.push({ name: 'Select a device...', index: null })
 function onEnabled() {
   // Viewing available inputs and outputs
   console.log(WebMidi.inputs)
@@ -32,58 +48,55 @@ function onEnabled() {
   // Retrieve an input by name, id or index
   // var input = WebMidi.getInputByName("My Awesome Keyboard");
 
-  const sampler = new Tone.Sampler({
-    urls: {
-      C4: '_C4.L.mp3',
-      'D#4': '_D#4.L.mp3',
-      'F#4': '_F#4.L.mp3',
-      A4: '_A4.L.mp3'
-    },
-    release: 1,
-    baseUrl: ''
-  }).toDestination()
-
   // input = WebMidi.getInputById("1809568182");
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
-  var input = WebMidi.inputs[0] // Primer Input seleccionada
-  if (input) {
-    Tone.loaded().then(() => {
-      // Listen for a 'note on' message on all channels
-      input.addListener('noteon', function (e: NoteMessageEvent) {
-        console.log(e)
-        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-        // note.value = currentNote
-        if (!currentNotes.includes(currentNote)) {
-          currentNotes.push(currentNote)
-        }
-        currentNotes.sort()
-        sampler.triggerAttackRelease([currentNote], 4)
-        // const audio = new Audio(`_${currentNote}.mp3`)
-        // audio.play()
-        // console.log("Received 'noteon' message (" + currentNote + ').')
-      })
+  let input: Input
 
-      // Listen for a 'note on' message on all channels
-      input.addListener('noteoff', function (e: NoteMessageEvent) {
-        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+  watch(selectedDevice, () => {
+    if (selectedDevice.value) {
+      if (input) {
+        input.removeListener()
+      }
+      input = WebMidi.inputs[selectedDevice.value]
+      if (input) {
+        // Listen for a 'note on' message on all channels
+        input.addListener('noteon', function (e: NoteMessageEvent) {
+          console.log(e)
+          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+          // note.value = currentNote
+          if (!currentNotes.includes(currentNote)) {
+            currentNotes.push(currentNote)
+          }
+          if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
+          // const audio = new Audio(`_${currentNote}.mp3`)
+          // audio.play()
+          // console.log("Received 'noteon' message (" + currentNote + ').')
+        })
+        // Listen for a 'note on' message on all channels
+        input.addListener('noteoff', function (e: NoteMessageEvent) {
+          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
 
-        const index = currentNotes.indexOf(currentNote)
-        if (index > -1) {
-          currentNotes.splice(index, 1)
-        }
-        // console.log(e)
-        // console.log(
-        //   "Received 'noteoff' message (" +
-        //     e.note.name +
-        //     (e.note.accidental ?? '') +
-        //     e.note.octave +
-        //     ').'
-        // )
-      })
-    })
-  }
+          const index = currentNotes.indexOf(currentNote)
+          if (index > -1) {
+            currentNotes.splice(index, 1)
+          }
+          // console.log(e)
+          // console.log(
+          //   "Received 'noteoff' message (" +
+          //     e.note.name +
+          //     (e.note.accidental ?? '') +
+          //     e.note.octave +
+          //     ').'
+          // )
+        })
+      }
+    } else {
+      input.removeListener()
+      input = null
+    }
+  })
 
   // Listen to pitch bend message on channel 3
   // input.addListener('pitchbend', 1, function (e) {
@@ -170,32 +183,19 @@ const getMouseAngle = (event: any) => {
         <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation4 + 'deg)' }"></div>
       </div>
     </div>
-    <label for="device">Midi Device: </label>
-    <select class="form-control" id="device">
-      <option :key="device.index" v-for="device in availableDevices" :value="device.index">
-        {{ device.name }}
-      </option>
-    </select>
-    <h2 style="color: rebeccapurple">{{ note }}</h2>
-    <h2 style="color: rebeccapurple">{{ currentNotes }}</h2>
+    <div class="device">
+      <label for="device">Device: </label>
+      <select class="form-control" id="device" v-model="selectedDevice">
+        <option :key="device.index" v-for="device in availableDevices" :value="device.index">
+          {{ device.name }}
+        </option>
+      </select>
+      <span style="color: rebeccapurple">{{ currentNotes }}</span>
+    </div>
     <div class="patterns">
       <input type="number" name="bpm" id="bpmInput" value="100" />
     </div>
   </div>
-  <!-- <header>
-    <img class="logo" src="@/assets/UI.jpeg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header> -->
-
-  <!-- <RouterView /> -->
 </template>
 
 <style>
@@ -225,7 +225,11 @@ const getMouseAngle = (event: any) => {
 .release {
   top: 53px;
 }
-
+.device {
+  position: absolute;
+  top: 10px;
+  left: 40px;
+}
 .threshold {
   top: 64px;
 }
@@ -248,7 +252,7 @@ const getMouseAngle = (event: any) => {
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
-  top: 440px;
+  top: 500px;
   left: 30px;
 }
 .patterns > input {
