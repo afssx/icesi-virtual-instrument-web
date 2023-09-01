@@ -7,12 +7,12 @@ const currentNotes = reactive<any[]>([])
 const availableDevices = reactive<any[]>([])
 const selectedDevice = ref<number | null>(null)
 
-console.log('Enable')
 const knobRotation1 = ref(0)
 const knobRotation2 = ref(0)
 const knobRotation3 = ref(0)
 const knobRotation4 = ref(0)
 let samplerIsReady = false
+
 const sampler = new Tone.Sampler({
   urls: {
     C3: '_C4.L.mp3',
@@ -27,28 +27,33 @@ const sampler = new Tone.Sampler({
 
 Tone.loaded().then(() => {
   samplerIsReady = true
-  console.log('Is ready')
+  console.log('Sampler is ready')
 })
+
 WebMidi.enable()
   .then(onEnabled)
   .catch((err) => alert(err))
+
 availableDevices.push({ name: 'Select a device...', index: null })
+const isDragging = ref(false)
+const isDraggingKnob1 = ref(false)
+const isDraggingKnob2 = ref(false)
+const isDraggingKnob3 = ref(false)
+const isDraggingKnob4 = ref(false)
+
 function onEnabled() {
   // Viewing available inputs and outputs
   console.log(WebMidi.inputs)
-  // console.log(WebMidi.outputs)
+  console.log(WebMidi.outputs)
   // Inputs
-  WebMidi.inputs.forEach((input) => console.log(input.manufacturer, input.name))
   WebMidi.inputs.forEach((input, index) => {
     availableDevices.push({ name: input.name, index })
   })
 
-  // Outputs
-  // WebMidi.outputs.forEach((output) => console.log(output.manufacturer, output.name))
   // Retrieve an input by name, id or index
   // var input = WebMidi.getInputByName("My Awesome Keyboard");
-
   // input = WebMidi.getInputById("1809568182");
+
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
@@ -113,31 +118,24 @@ function onEnabled() {
 
   // Remove all listeners on the input
   // input.removeListener()
-  const knob = document.querySelector('.knob')
-  knob?.addEventListener('mousedown', startDrag)
-  window.addEventListener('mouseup', endDrag)
-  // window.addEventListener('mousemove', drag)
-  window.addEventListener('mousemove', (event) => {
-    drag(event, knobRotation1)
-    drag(event, knobRotation2)
-    drag(event, knobRotation3)
-    drag(event, knobRotation4)
-  })
 }
 
-const isDragging = ref(false)
 const prevMouseAngle = ref(0)
 
 const startDrag = (event: any) => {
   isDragging.value = true
-  prevMouseAngle.value = getMouseAngle(event)
+  // prevMouseAngle.value = getMouseAngle(event)
 }
 
 const endDrag = () => {
   isDragging.value = false
+  isDraggingKnob1.value = false
+  isDraggingKnob2.value = false
+  isDraggingKnob3.value = false
+  isDraggingKnob4.value = false
 }
 
-const drag = (event: any, knobRotation: any) => {
+const drag = (event: any, knobRotation: any, isDragging: any) => {
   if (isDragging.value) {
     const mouseAngle = getMouseAngle(event)
     const angleDiff = mouseAngle - prevMouseAngle.value
@@ -164,22 +162,66 @@ const getMouseAngle = (event: any) => {
   }
   return 0
 }
+
+const knob = document.querySelector('.knob')
+knob?.addEventListener('mousedown', startDrag)
+window.addEventListener('mouseup', endDrag)
+// window.addEventListener('mousemove', drag)
+window.addEventListener('mousemove', (event) => {
+  if (isDraggingKnob1.value) drag(event, knobRotation1, isDraggingKnob1)
+  if (isDraggingKnob2.value) drag(event, knobRotation2, isDraggingKnob2)
+  if (isDraggingKnob3.value) drag(event, knobRotation3, isDraggingKnob3)
+  if (isDraggingKnob4.value) drag(event, knobRotation4, isDraggingKnob4)
+})
 </script>
 
 <template>
   <div class="ui">
-    <div class="marimba"></div>
+    <div class="marimba" style="color: red"></div>
     <div class="compressor">
       <div class="knob attack">
-        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation1 + 'deg)' }"></div>
+        <div
+          class="knob-handle"
+          :style="{ transform: 'rotate(' + knobRotation1 + 'deg)' }"
+          @mousedown="
+            (e) => {
+              isDraggingKnob1 = true
+              startDrag(e)
+            }
+          "
+        ></div>
       </div>
-      <div class="knob release">
+      <div
+        class="knob release"
+        @mousedown="
+          (e) => {
+            isDraggingKnob2 = true
+            startDrag(e)
+          }
+        "
+      >
         <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation2 + 'deg)' }"></div>
       </div>
-      <div class="knob threshold">
+      <div
+        class="knob threshold"
+        @mousedown="
+          (e) => {
+            isDraggingKnob3 = true
+            startDrag(e)
+          }
+        "
+      >
         <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation3 + 'deg)' }"></div>
       </div>
-      <div class="knob ratio">
+      <div
+        class="knob ratio"
+        @mousedown="
+          (e) => {
+            isDraggingKnob4 = true
+            startDrag(e)
+          }
+        "
+      >
         <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation4 + 'deg)' }"></div>
       </div>
     </div>
