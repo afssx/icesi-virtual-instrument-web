@@ -2,8 +2,9 @@
 import { WebMidi, type NoteMessageEvent, Input } from 'webmidi'
 import { reactive, ref, watch } from 'vue'
 import * as Tone from 'tone'
-
+import Marimba from './components/Marimba.vue'
 const currentNotes = reactive<any[]>([])
+const lastNote = ref<string>('')
 const availableDevices = reactive<any[]>([])
 const selectedDevice = ref<number | null>(null)
 
@@ -68,26 +69,23 @@ function onEnabled() {
       if (input) {
         // Listen for a 'note on' message on all channels
         input.addListener('noteon', function (e: NoteMessageEvent) {
-          console.log(e)
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-          // note.value = currentNote
+          lastNote.value = currentNote
           if (!currentNotes.includes(currentNote)) {
             currentNotes.push(currentNote)
           }
           if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
-          // const audio = new Audio(`_${currentNote}.mp3`)
-          // audio.play()
           // console.log("Received 'noteon' message (" + currentNote + ').')
         })
         // Listen for a 'note on' message on all channels
         input.addListener('noteoff', function (e: NoteMessageEvent) {
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-
+          lastNote.value = ''
           const index = currentNotes.indexOf(currentNote)
           if (index > -1) {
             currentNotes.splice(index, 1)
           }
-          // console.log(e)
+
           // console.log(
           //   "Received 'noteoff' message (" +
           //     e.note.name +
@@ -98,8 +96,10 @@ function onEnabled() {
         })
       }
     } else {
-      input.removeListener()
-      input = null
+      if (input) {
+        input.removeListener()
+        input = null
+      }
     }
   })
 
@@ -177,7 +177,8 @@ window.addEventListener('mousemove', (event) => {
 
 <template>
   <div class="ui">
-    <div class="marimba" style="color: red"></div>
+    <Marimba :current-notes="currentNotes" />
+    <!-- <div class="marimba"></div> -->
     <div class="compressor">
       <div class="knob attack">
         <div
@@ -306,14 +307,14 @@ window.addEventListener('mousemove', (event) => {
   text-align: right;
   border: none;
 }
-.marimba {
+/* .marimba {
   background-image: url(assets/marimba/Frame.png);
   width: 836px;
   height: 327px;
   position: absolute;
   top: 40px;
   left: 80px;
-}
+} */
 .compressor {
   background-image: url(assets/Compresor.png);
   width: 126px;
