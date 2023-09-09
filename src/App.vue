@@ -3,7 +3,8 @@ import { WebMidi, type NoteMessageEvent, Input } from 'webmidi'
 import { reactive, ref, watch } from 'vue'
 import * as Tone from 'tone'
 import Marimba from './components/Marimba.vue'
-const currentNotes = reactive<any[]>([])
+import NotesDisplay from './components/NotesDisplay.vue'
+const currentNotes = reactive<any[]>(['C3', 'C#3', 'D3', 'E3'])
 const lastNote = ref<string>('')
 const availableDevices = reactive<any[]>([])
 const selectedDevice = ref<number | null>(null)
@@ -178,6 +179,7 @@ window.addEventListener('mousemove', (event) => {
 <template>
   <div class="ui">
     <Marimba :current-notes="currentNotes" />
+    <NotesDisplay :current-notes="currentNotes" />
     <!-- <div class="marimba"></div> -->
     <div class="compressor">
       <div class="knob attack">
@@ -227,13 +229,11 @@ window.addEventListener('mousemove', (event) => {
       </div>
     </div>
     <div class="device">
-      <label for="device">Device: </label>
       <select class="form-control" id="device" v-model="selectedDevice">
         <option :key="device.index" v-for="device in availableDevices" :value="device.index">
           {{ device.name }}
         </option>
       </select>
-      <span style="color: rebeccapurple">{{ currentNotes }}</span>
     </div>
     <div class="patterns">
       <input type="number" name="bpm" id="bpmInput" value="100" />
@@ -270,8 +270,8 @@ window.addEventListener('mousemove', (event) => {
 }
 .device {
   position: absolute;
-  top: 10px;
-  left: 40px;
+  top: 54px;
+  left: 160px;
 }
 .threshold {
   top: 64px;
@@ -281,9 +281,9 @@ window.addEventListener('mousemove', (event) => {
 }
 
 .ui {
-  background-image: url(assets/Frame.png);
+  background-image: url(assets/NewFrame.png);
   width: 1145px;
-  height: 739px;
+  height: 835px;
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
@@ -295,7 +295,7 @@ window.addEventListener('mousemove', (event) => {
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
-  top: 500px;
+  top: 610px;
   left: 30px;
 }
 .patterns > input {
@@ -321,7 +321,7 @@ window.addEventListener('mousemove', (event) => {
   height: 386px;
   position: absolute;
   right: 40px;
-  top: 40px;
+  top: 180px;
 }
 label {
   color: #010101;

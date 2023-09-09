@@ -50,10 +50,11 @@ const currentNote1 = computed(() => {
 <style scoped>
 .marimba {
   background-image: url(Marimba/Frame.png);
-  width: 951px;
-  height: 349px;
+  width: 851px;
+  height: 309px;
   position: absolute;
-  top: 40px;
+  background-size: contain;
+  top: 140px;
   left: 80px;
 }
 .layer {
