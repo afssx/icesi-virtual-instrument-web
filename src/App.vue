@@ -2,27 +2,72 @@
 import { WebMidi, type NoteMessageEvent, Input } from 'webmidi'
 import { reactive, ref, watch } from 'vue'
 import * as Tone from 'tone'
-import Marimba from './components/Marimba.vue'
+import Marimba from './components/MarimbaComponent.vue'
+import Compressor from './components/CompressorComponent.vue'
 import NotesDisplay from './components/NotesDisplay.vue'
-const currentNotes = reactive<any[]>(['C3', 'C#3', 'D3', 'E3'])
+const currentNotes = reactive<any[]>([])
 const lastNote = ref<string>('')
 const availableDevices = reactive<any[]>([])
 const selectedDevice = ref<number | null>(null)
 
-const knobRotation1 = ref(0)
-const knobRotation2 = ref(0)
-const knobRotation3 = ref(0)
-const knobRotation4 = ref(0)
 let samplerIsReady = false
 
-const sampler = new Tone.Sampler({
+const samplerForte = new Tone.Sampler({
   urls: {
-    C3: '_C4.L.mp3',
-    'D#3': '_Ds4.L.mp3',
-    'F#3': '_Fs4.L.mp3',
-    A3: '_A4.L.mp3'
+    C3: 'Forte/C3f.mp3',
+    'D#3': 'Forte/Ds3f.mp3',
+    'F#3': 'Forte/Fs3f.mp3',
+    A3: 'Forte/A3f.mp3',
+    C4: 'Forte/C4f.mp3',
+    'D#4': 'Forte/Ds4f.mp3',
+    'F#4': 'Forte/Fs4f.mp3',
+    A4: 'Forte/A4f.mp3'
   },
+  release: 1,
+  baseUrl: ''
+}).toDestination()
 
+const samplerPiano = new Tone.Sampler({
+  urls: {
+    C3: 'Piano/C3p.mp3',
+    'D#3': 'Piano/Ds3p.mp3',
+    'F#3': 'Piano/Fs3p.mp3',
+    A3: 'Piano/A3p.mp3',
+    C4: 'Piano/C4p.mp3',
+    'D#4': 'Piano/Ds4p.mp3',
+    'F#4': 'Piano/Fs4p.mp3',
+    A4: 'Piano/A4p.mp3'
+  },
+  release: 1,
+  baseUrl: ''
+}).toDestination()
+
+const samplerMezzoPiano = new Tone.Sampler({
+  urls: {
+    C3: 'Mezzopiano/C3mp.mp3',
+    'D#3': 'Mezzopiano/Ds3mp.mp3',
+    'F#3': 'Mezzopiano/Fs3mp.mp3',
+    A3: 'Mezzopiano/A3mp.mp3',
+    C4: 'Mezzopiano/C4mp.mp3',
+    'D#4': 'Mezzopiano/Ds4mp.mp3',
+    'F#4': 'Mezzopiano/Fs4mp.mp3',
+    A4: 'Mezzopiano/A4mp.mp3'
+  },
+  release: 1,
+  baseUrl: ''
+}).toDestination()
+
+const samplerMezzoForte = new Tone.Sampler({
+  urls: {
+    C3: 'Mezzoforte/C3mf.mp3',
+    'D#3': 'Mezzoforte/Ds3mf.mp3',
+    'F#3': 'Mezzoforte/Fs3mf.mp3',
+    A3: 'Mezzoforte/A3mf.mp3',
+    C4: 'Mezzoforte/C4mf.mp3',
+    'D#4': 'Mezzoforte/Ds4mf.mp3',
+    'F#4': 'Mezzoforte/Fs4mf.mp3',
+    A4: 'Mezzoforte/A4mf.mp3'
+  },
   release: 1,
   baseUrl: ''
 }).toDestination()
@@ -37,11 +82,6 @@ WebMidi.enable()
   .catch((err) => alert(err))
 
 availableDevices.push({ name: 'Select a device...', index: null })
-const isDragging = ref(false)
-const isDraggingKnob1 = ref(false)
-const isDraggingKnob2 = ref(false)
-const isDraggingKnob3 = ref(false)
-const isDraggingKnob4 = ref(false)
 
 function onEnabled() {
   // Viewing available inputs and outputs
@@ -68,14 +108,17 @@ function onEnabled() {
       }
       input = WebMidi.inputs[selectedDevice.value]
       if (input) {
+        let sampler: Tone.Sampler
+
+        sampler = samplerPiano
         // Listen for a 'note on' message on all channels
         input.addListener('noteon', function (e: NoteMessageEvent) {
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
           lastNote.value = currentNote
-          if (!currentNotes.includes(currentNote)) {
+          if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
+            if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
             currentNotes.push(currentNote)
           }
-          if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
           // console.log("Received 'noteon' message (" + currentNote + ').')
         })
         // Listen for a 'note on' message on all channels
@@ -86,7 +129,6 @@ function onEnabled() {
           if (index > -1) {
             currentNotes.splice(index, 1)
           }
-
           // console.log(
           //   "Received 'noteoff' message (" +
           //     e.note.name +
@@ -120,114 +162,13 @@ function onEnabled() {
   // Remove all listeners on the input
   // input.removeListener()
 }
-
-const prevMouseAngle = ref(0)
-
-const startDrag = (event: any) => {
-  isDragging.value = true
-  // prevMouseAngle.value = getMouseAngle(event)
-}
-
-const endDrag = () => {
-  isDragging.value = false
-  isDraggingKnob1.value = false
-  isDraggingKnob2.value = false
-  isDraggingKnob3.value = false
-  isDraggingKnob4.value = false
-}
-
-const drag = (event: any, knobRotation: any, isDragging: any) => {
-  if (isDragging.value) {
-    const mouseAngle = getMouseAngle(event)
-    const angleDiff = mouseAngle - prevMouseAngle.value
-    knobRotation.value += angleDiff
-    prevMouseAngle.value = mouseAngle
-
-    if (knobRotation.value >= 360) {
-      knobRotation.value -= 360
-    } else if (knobRotation.value < 0) {
-      knobRotation.value += 360
-    }
-  }
-}
-
-const getMouseAngle = (event: any) => {
-  const knob = document.querySelector('.knob')
-  if (knob) {
-    const knobRect = knob?.getBoundingClientRect()
-    const knobCenterX = knobRect.left + knobRect.width / 2
-    const knobCenterY = knobRect.top + knobRect.height / 2
-    const mouseAngle =
-      Math.atan2(event.clientY - knobCenterY, event.clientX - knobCenterX) * (180 / Math.PI)
-    return mouseAngle < 0 ? mouseAngle + 360 : mouseAngle
-  }
-  return 0
-}
-
-const knob = document.querySelector('.knob')
-knob?.addEventListener('mousedown', startDrag)
-window.addEventListener('mouseup', endDrag)
-// window.addEventListener('mousemove', drag)
-window.addEventListener('mousemove', (event) => {
-  if (isDraggingKnob1.value) drag(event, knobRotation1, isDraggingKnob1)
-  if (isDraggingKnob2.value) drag(event, knobRotation2, isDraggingKnob2)
-  if (isDraggingKnob3.value) drag(event, knobRotation3, isDraggingKnob3)
-  if (isDraggingKnob4.value) drag(event, knobRotation4, isDraggingKnob4)
-})
 </script>
 
 <template>
   <div class="ui">
     <Marimba :current-notes="currentNotes" />
     <NotesDisplay :current-notes="currentNotes" />
-    <!-- <div class="marimba"></div> -->
-    <div class="compressor">
-      <div class="knob attack">
-        <div
-          class="knob-handle"
-          :style="{ transform: 'rotate(' + knobRotation1 + 'deg)' }"
-          @mousedown="
-            (e) => {
-              isDraggingKnob1 = true
-              startDrag(e)
-            }
-          "
-        ></div>
-      </div>
-      <div
-        class="knob release"
-        @mousedown="
-          (e) => {
-            isDraggingKnob2 = true
-            startDrag(e)
-          }
-        "
-      >
-        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation2 + 'deg)' }"></div>
-      </div>
-      <div
-        class="knob threshold"
-        @mousedown="
-          (e) => {
-            isDraggingKnob3 = true
-            startDrag(e)
-          }
-        "
-      >
-        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation3 + 'deg)' }"></div>
-      </div>
-      <div
-        class="knob ratio"
-        @mousedown="
-          (e) => {
-            isDraggingKnob4 = true
-            startDrag(e)
-          }
-        "
-      >
-        <div class="knob-handle" :style="{ transform: 'rotate(' + knobRotation4 + 'deg)' }"></div>
-      </div>
-    </div>
+    <Compressor class="compressor" />
     <div class="device">
       <select class="form-control" id="device" v-model="selectedDevice">
         <option :key="device.index" v-for="device in availableDevices" :value="device.index">
@@ -242,29 +183,6 @@ window.addEventListener('mousemove', (event) => {
 </template>
 
 <style>
-.knob {
-  width: 70px;
-  height: 70px;
-  top: 42px;
-  left: 28px;
-  /* background-color: #e0e0e0; */
-  /* border-radius: 50%; */
-  position: relative;
-  overflow: hidden;
-  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); */
-}
-
-.knob-handle {
-  width: 70px;
-  height: 70px;
-  background-image: url(assets/Knob/Group75.png);
-  background-size: contain;
-  position: absolute;
-  /* top: 50%;
-  left: 50%; */
-  /* transform: translate(-50%, -50%); */
-  /* border-radius: 5px; */
-}
 .release {
   top: 53px;
 }
@@ -281,7 +199,7 @@ window.addEventListener('mousemove', (event) => {
 }
 
 .ui {
-  background-image: url(assets/NewFrame.png);
+  background-image: url(images/NewFrame.png);
   width: 1145px;
   height: 835px;
   background-size: cover;
@@ -289,7 +207,7 @@ window.addEventListener('mousemove', (event) => {
   position: relative;
 }
 .patterns {
-  background-image: url(assets/Patrones.png);
+  background-image: url(images/Patrones.png);
   width: 449px;
   height: 197px;
   background-size: cover;
@@ -316,9 +234,6 @@ window.addEventListener('mousemove', (event) => {
   left: 80px;
 } */
 .compressor {
-  background-image: url(assets/Compresor.png);
-  width: 126px;
-  height: 386px;
   position: absolute;
   right: 40px;
   top: 180px;

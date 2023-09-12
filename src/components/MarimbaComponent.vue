@@ -3,22 +3,22 @@
     <div
       v-if="currentNote1"
       class="layer"
-      :style="{ backgroundImage: `url('Marimba/${currentNote1}.png')` }"
+      :style="{ backgroundImage: `url('images/Marimba/${currentNote1}.png')` }"
     ></div>
     <div
       v-if="currentNote2"
       class="layer"
-      :style="{ backgroundImage: `url('Marimba/${currentNote2}.png')` }"
+      :style="{ backgroundImage: `url('images/Marimba/${currentNote2}.png')` }"
     ></div>
     <div
       v-if="currentNote3"
       class="layer"
-      :style="{ backgroundImage: `url('Marimba/${currentNote3}.png')` }"
+      :style="{ backgroundImage: `url('images/Marimba/${currentNote3}.png')` }"
     ></div>
     <div
       v-if="currentNote4"
       class="layer"
-      :style="{ backgroundImage: `url('Marimba/${currentNote4}.png')` }"
+      :style="{ backgroundImage: `url('images/Marimba/${currentNote4}.png')` }"
     ></div>
   </div>
 </template>
@@ -41,15 +41,10 @@ const currentNote2 = computed(() => {
 const currentNote1 = computed(() => {
   return props.currentNotes[0] ? props.currentNotes[0].replace('#', 'S') : null
 })
-
-// const [currentNote1, currentNote2, currentNote3, currentNote4] = computed(() => {
-//   return props.currentNotes.length > 0 ? props.currentNotes : [null, null, null, null]
-// })
-// const { currentNote1, currentNote2, currentNote3, currentNote4 } = { ...props.currentNotes }
 </script>
 <style scoped>
 .marimba {
-  background-image: url(Marimba/Frame.png);
+  background-image: url(images/Marimba/Frame.png);
   width: 851px;
   height: 309px;
   position: absolute;
@@ -58,9 +53,10 @@ const currentNote1 = computed(() => {
   left: 80px;
 }
 .layer {
-  width: 951px;
-  height: 349px;
+  width: 851px;
+  height: 309px;
   position: absolute;
+  background-size: contain;
   top: 0px;
   left: 0px;
 }

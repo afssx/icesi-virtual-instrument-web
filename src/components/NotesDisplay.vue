@@ -25,23 +25,24 @@ const currentNote2 = computed(() => {
 const currentNote1 = computed(() => {
   return props.currentNotes[0] ? props.currentNotes[0] : null
 })
-
-// const [currentNote1, currentNote2, currentNote3, currentNote4] = computed(() => {
-//   return props.currentNotes.length > 0 ? props.currentNotes : [null, null, null, null]
-// })
-// const { currentNote1, currentNote2, currentNote3, currentNote4 } = { ...props.currentNotes }
 </script>
 <style scoped>
 .display {
-  width: 210px;
-  height: 100px;
+  width: 220px;
+  height: 40px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   position: absolute;
-  right: 56px;
-  top: 66px;
-  font-size: 20px;
+  right: 49px;
+  top: 62px;
+  gap: 18px;
+}
+.note {
+  flex: 1 1 0px;
+  text-align: center;
+  padding-top: 6px;
+  font-size: 18px;
   color: gray;
 }
 </style>
