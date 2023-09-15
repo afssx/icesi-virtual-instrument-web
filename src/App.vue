@@ -100,6 +100,11 @@ function onEnabled() {
     alert('No hay ningun dispotivo MIDI conectado')
   }
   let input: Input
+  const reverb = new Tone.Freeverb({
+    roomSize: 0.8, // Ajusta el tamaño de la habitación (room size) aquí
+    dampening: 3000, // Ajusta el parámetro de dampening si es necesario
+    wet: 0.5
+  }).toDestination()
 
   watch(selectedDevice, () => {
     if (selectedDevice.value) {
@@ -110,7 +115,8 @@ function onEnabled() {
       if (input) {
         let sampler: Tone.Sampler
 
-        sampler = samplerPiano
+        sampler = samplerMezzoForte
+        sampler.chain(reverb, Tone.Destination)
         // Listen for a 'note on' message on all channels
         input.addListener('noteon', function (e: NoteMessageEvent) {
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
@@ -225,14 +231,7 @@ function onEnabled() {
   text-align: right;
   border: none;
 }
-/* .marimba {
-  background-image: url(assets/marimba/Frame.png);
-  width: 836px;
-  height: 327px;
-  position: absolute;
-  top: 40px;
-  left: 80px;
-} */
+
 .compressor {
   position: absolute;
   right: 40px;
@@ -246,60 +245,6 @@ header {
   max-height: 100vh;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
 @media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
 }
 </style>

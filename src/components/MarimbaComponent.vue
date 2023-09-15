@@ -1,25 +1,33 @@
 <template>
   <div class="marimba">
-    <div
-      v-if="currentNote1"
-      class="layer"
-      :style="{ backgroundImage: `url('images/Marimba/${currentNote1}.png')` }"
-    ></div>
-    <div
-      v-if="currentNote2"
-      class="layer"
-      :style="{ backgroundImage: `url('images/Marimba/${currentNote2}.png')` }"
-    ></div>
-    <div
-      v-if="currentNote3"
-      class="layer"
-      :style="{ backgroundImage: `url('images/Marimba/${currentNote3}.png')` }"
-    ></div>
-    <div
-      v-if="currentNote4"
-      class="layer"
-      :style="{ backgroundImage: `url('images/Marimba/${currentNote4}.png')` }"
-    ></div>
+    <transition name="fade" mode="out-in">
+      <div
+        v-if="currentNote1"
+        class="layer"
+        :style="{ backgroundImage: `url('images/Marimba/${currentNote1}.png')` }"
+      ></div>
+    </transition>
+    <transition name="fade" mode="out-in">
+      <div
+        v-if="currentNote2"
+        class="layer"
+        :style="{ backgroundImage: `url('images/Marimba/${currentNote2}.png')` }"
+      ></div>
+    </transition>
+    <transition name="fade" mode="out-in">
+      <div
+        v-if="currentNote3"
+        class="layer"
+        :style="{ backgroundImage: `url('images/Marimba/${currentNote3}.png')` }"
+      ></div>
+    </transition>
+    <transition name="fade" mode="out-in">
+      <div
+        v-if="currentNote4"
+        class="layer"
+        :style="{ backgroundImage: `url('images/Marimba/${currentNote4}.png')` }"
+      ></div>
+    </transition>
   </div>
 </template>
 <script lang="ts" setup>
@@ -59,5 +67,14 @@ const currentNote1 = computed(() => {
   background-size: contain;
   top: 0px;
   left: 0px;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s; /* Ajusta la duración de la transición según tus preferencias */
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

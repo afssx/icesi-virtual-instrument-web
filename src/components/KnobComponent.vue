@@ -1,6 +1,6 @@
 <template>
   <div class="knob" ref="knob" :title="props.name">
-    <p>{{ parseInt(knobRotation.toString()) }}</p>
+    <p v-if="showValue">{{ parseInt(knobRotation.toString()) }}</p>
     <div
       class="knob-handle"
       :style="{ transform: 'rotate(' + knobRotation + 'deg)' }"
@@ -22,6 +22,7 @@ const prevMouseAngle = ref(0)
 const knob = ref(null)
 const props = defineProps<{
   name: string
+  showValue: { type: Boolean; default: false }
 }>()
 
 onMounted(() => {
