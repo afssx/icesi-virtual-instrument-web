@@ -3,6 +3,7 @@ import { WebMidi, type NoteMessageEvent, Input } from 'webmidi'
 import { reactive, ref, watch } from 'vue'
 import * as Tone from 'tone'
 import Marimba from './components/MarimbaComponent.vue'
+import Knob from './components/KnobComponent.vue'
 import Compressor from './components/CompressorComponent.vue'
 import NotesDisplay from './components/NotesDisplay.vue'
 const currentNotes = reactive<any[]>([])
@@ -185,7 +186,10 @@ function onEnabled() {
     <div class="patterns">
       <input type="number" name="bpm" id="bpmInput" value="100" />
     </div>
-    <div class="reverb"></div>
+    <div class="reverb">
+      <Knob name="Attack" class="k2" />
+      <Knob name="Attack" class="k3" />
+    </div>
   </div>
 </template>
 
@@ -256,5 +260,25 @@ header {
 }
 
 @media (min-width: 1024px) {
+}
+.k2 {
+  top: 40px;
+  left: 2px;
+  width: 110px !important;
+  height: 110px !important;
+}
+.k2 > div {
+  width: 110px !important;
+  height: 110px !important;
+}
+.k3 {
+  top: 50px;
+  left: 23px;
+  width: 68px !important;
+  height: 68px !important;
+}
+.k3 > div {
+  width: 68px !important;
+  height: 68px !important;
 }
 </style>
