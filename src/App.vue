@@ -116,7 +116,7 @@ function onEnabled() {
         let sampler: Tone.Sampler
 
         sampler = samplerMezzoForte
-        sampler.chain(reverb, Tone.Destination)
+        // sampler.chain(reverb, Tone.Destination)
         // Listen for a 'note on' message on all channels
         input.addListener('noteon', function (e: NoteMessageEvent) {
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
