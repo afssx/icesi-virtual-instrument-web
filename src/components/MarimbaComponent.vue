@@ -4,28 +4,28 @@
       <div
         v-if="currentNote1"
         class="layer"
-        :style="{ backgroundImage: `url('images/Marimba/${currentNote1}.png')` }"
+        :style="{ backgroundImage: `url('./images/Marimba/${currentNote1}.png')` }"
       ></div>
     </transition>
     <transition name="fade" mode="out-in">
       <div
         v-if="currentNote2"
         class="layer"
-        :style="{ backgroundImage: `url('images/Marimba/${currentNote2}.png')` }"
+        :style="{ backgroundImage: `url('./images/Marimba/${currentNote2}.png')` }"
       ></div>
     </transition>
     <transition name="fade" mode="out-in">
       <div
         v-if="currentNote3"
         class="layer"
-        :style="{ backgroundImage: `url('images/Marimba/${currentNote3}.png')` }"
+        :style="{ backgroundImage: `url('./images/Marimba/${currentNote3}.png')` }"
       ></div>
     </transition>
     <transition name="fade" mode="out-in">
       <div
         v-if="currentNote4"
         class="layer"
-        :style="{ backgroundImage: `url('images/Marimba/${currentNote4}.png')` }"
+        :style="{ backgroundImage: `url('./images/Marimba/${currentNote4}.png')` }"
       ></div>
     </transition>
   </div>
@@ -52,7 +52,7 @@ const currentNote1 = computed(() => {
 </script>
 <style scoped>
 .marimba {
-  background-image: url(images/Marimba/Frame.png);
+  background-image: url(./images/Marimba/Frame.png);
   width: 851px;
   height: 309px;
   position: absolute;
