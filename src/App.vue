@@ -205,7 +205,7 @@ function onEnabled() {
 }
 
 .ui {
-  background-image: url(./images/NewFrame.png);
+  background-image: url(/images/NewFrame.png);
   width: 1145px;
   height: 835px;
   background-size: cover;
@@ -213,7 +213,7 @@ function onEnabled() {
   position: relative;
 }
 .patterns {
-  background-image: url(./images/Patrones.png);
+  background-image: url(/images/Patrones.png);
   width: 449px;
   height: 197px;
   background-size: cover;

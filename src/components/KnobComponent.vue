@@ -92,7 +92,7 @@ const getMouseAngle = (event: any) => {
 .knob-handle {
   width: 70px;
   height: 70px;
-  background-image: url(./images/Group75.png);
+  background-image: url(/images/Group75.png);
   background-size: contain;
   position: absolute;
 }
