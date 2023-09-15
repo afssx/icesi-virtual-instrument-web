@@ -185,6 +185,7 @@ function onEnabled() {
     <div class="patterns">
       <input type="number" name="bpm" id="bpmInput" value="100" />
     </div>
+    <div class="reverb"></div>
   </div>
 </template>
 
@@ -203,7 +204,16 @@ function onEnabled() {
 .ratio {
   top: 75px;
 }
-
+.reverb {
+  background-image: url(/images/Reverb.png);
+  width: 500px;
+  height: 250px;
+  position: absolute;
+  bottom: 10px;
+  right: 140px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
 .ui {
   background-image: url(/images/NewFrame.png);
   width: 1145px;
