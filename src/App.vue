@@ -83,6 +83,13 @@ WebMidi.enable()
   .catch((err) => alert(err))
 
 availableDevices.push({ name: 'Select a device...', index: null })
+let input: Input
+
+const reverb = new Tone.Freeverb({
+  roomSize: 0.8, // Ajusta el tamaño de la habitación (room size) aquí
+  dampening: 3000, // Ajusta el parámetro de dampening si es necesario
+  wet: 0.5
+}).toDestination()
 
 function onEnabled() {
   // Viewing available inputs and outputs
@@ -92,83 +99,48 @@ function onEnabled() {
   WebMidi.inputs.forEach((input, index) => {
     availableDevices.push({ name: input.name, index })
   })
-
-  // Retrieve an input by name, id or index
-  // var input = WebMidi.getInputByName("My Awesome Keyboard");
-  // input = WebMidi.getInputById("1809568182");
-
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
-  let input: Input
-  const reverb = new Tone.Freeverb({
-    roomSize: 0.8, // Ajusta el tamaño de la habitación (room size) aquí
-    dampening: 3000, // Ajusta el parámetro de dampening si es necesario
-    wet: 0.5
-  }).toDestination()
-
-  watch(selectedDevice, () => {
-    if (selectedDevice.value) {
-      if (input) {
-        input.removeListener()
-      }
-      input = WebMidi.inputs[selectedDevice.value]
-      if (input) {
-        let sampler: Tone.Sampler
-
-        sampler = samplerMezzoForte
-        // sampler.chain(reverb, Tone.Destination)
-        // Listen for a 'note on' message on all channels
-        input.addListener('noteon', function (e: NoteMessageEvent) {
-          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-          lastNote.value = currentNote
-          if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
-            if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
-            currentNotes.push(currentNote)
-          }
-          // console.log("Received 'noteon' message (" + currentNote + ').')
-        })
-        // Listen for a 'note on' message on all channels
-        input.addListener('noteoff', function (e: NoteMessageEvent) {
-          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-          lastNote.value = ''
-          const index = currentNotes.indexOf(currentNote)
-          if (index > -1) {
-            currentNotes.splice(index, 1)
-          }
-          // console.log(
-          //   "Received 'noteoff' message (" +
-          //     e.note.name +
-          //     (e.note.accidental ?? '') +
-          //     e.note.octave +
-          //     ').'
-          // )
-        })
-      }
-    } else {
-      if (input) {
-        input.removeListener()
-        input = null
-      }
-    }
-  })
-
-  // Listen to pitch bend message on channel 3
-  // input.addListener('pitchbend', 1, function (e) {
-  //   console.log("Received 'pitchbend' message.", e)
-  // })
-
-  // Listen to control change message on all channels
-  // input.addListener('controlchange', 'all', function (e) {
-  //   console.log("Received 'controlchange' message.", e)
-  // })
-
-  // Remove all listeners for 'noteoff' on all channels
-  // input.removeListener('noteoff')
-
-  // Remove all listeners on the input
-  // input.removeListener()
 }
+
+watch(selectedDevice, () => {
+  if (selectedDevice.value) {
+    if (input) {
+      input.removeListener()
+    }
+    input = WebMidi.inputs[selectedDevice.value]
+    if (input) {
+      let sampler: Tone.Sampler
+      sampler = samplerMezzoForte
+      // sampler.chain(reverb, Tone.Destination)
+      // Listen for a 'note on' message on all channels
+      input.addListener('noteon', function (e: NoteMessageEvent) {
+        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+        lastNote.value = currentNote
+        if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
+          if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
+          currentNotes.push(currentNote)
+        }
+        console.log("Received 'noteon' message (" + currentNote + ').')
+      })
+      // Listen for a 'note on' message on all channels
+      input.addListener('noteoff', function (e: NoteMessageEvent) {
+        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+        lastNote.value = ''
+        const index = currentNotes.indexOf(currentNote)
+        if (index > -1) {
+          currentNotes.splice(index, 1)
+        }
+      })
+    }
+  } else {
+    if (input) {
+      input.removeListener()
+      input = null
+    }
+  }
+})
 </script>
 
 <template>
