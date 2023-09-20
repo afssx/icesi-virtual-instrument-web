@@ -53,16 +53,16 @@ const currentNote1 = computed(() => {
 <style scoped>
 .marimba {
   background-image: url(/images/Marimba/Frame.png);
-  width: 851px;
-  height: 309px;
+  width: 951px;
+  height: 349px;
   position: absolute;
   background-size: contain;
-  top: 140px;
-  left: 80px;
+  top: 137px;
+  left: 25px;
 }
 .layer {
-  width: 851px;
-  height: 309px;
+  width: 951px;
+  height: 349px;
   position: absolute;
   background-size: contain;
   top: 0px;
