@@ -110,7 +110,6 @@ function onEnabled() {
         input.removeListener()
         input = null
       }
-      // input = WebMidi.inputs[selectedDevice.value]
       input = WebMidi.getInputById(selectedDevice.value)
       if (input) {
         let sampler: Tone.Sampler
@@ -121,10 +120,26 @@ function onEnabled() {
           let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
           lastNote.value = currentNote
           if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
-            if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
-            currentNotes.push(currentNote)
+            if (samplerIsReady) {
+              const durationInSeconds = 0.5 // Por ejemplo, una duración de 0.5 segundos
+              const velocity = e.velocity
+
+              // Obtiene el tiempo actual de AudioContext
+              const currentTime = Tone.now()
+              const releaseTime = currentTime + durationInSeconds
+              console.log({ durationInSeconds, currentTime, velocity })
+              sampler.triggerAttackRelease(
+                [currentNote],
+                durationInSeconds,
+                currentTime,
+                velocity
+                // releaseTime
+              )
+              currentNotes.push(currentNote)
+            }
           }
-          console.log("Received 'noteon' message (" + currentNote + ').')
+          console.log(e)
+          // console.log("Received 'noteon' message (" + currentNote + ').')
         })
         // Listen for a 'note on' message on all channels
         input.addListener('noteoff', function (e: NoteMessageEvent) {
