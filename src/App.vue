@@ -122,6 +122,7 @@ function onEnabled() {
           if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
             if (samplerIsReady) {
               const durationInSeconds = 0.5 // Por ejemplo, una duración de 0.5 segundos
+              //@ts-ignore
               const velocity = e.velocity
 
               // Obtiene el tiempo actual de AudioContext
