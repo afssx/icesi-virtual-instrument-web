@@ -9,7 +9,7 @@ import NotesDisplay from './components/NotesDisplay.vue'
 const currentNotes = reactive<any[]>([])
 const lastNote = ref<string>('')
 const availableDevices = reactive<any[]>([])
-const selectedDevice = ref<number | null>(null)
+const selectedDevice = ref<string | null>(null)
 
 let samplerIsReady = false
 
@@ -97,50 +97,53 @@ function onEnabled() {
   console.log(WebMidi.outputs)
   // Inputs
   WebMidi.inputs.forEach((input, index) => {
-    availableDevices.push({ name: input.name, index })
+    availableDevices.push({ name: input.name, id: input.id })
   })
   if (WebMidi.inputs.length == 0) {
     alert('No hay ningun dispotivo MIDI conectado')
   }
-}
 
-watch(selectedDevice, () => {
-  if (selectedDevice.value) {
-    if (input) {
-      input.removeListener()
+  watch(selectedDevice, () => {
+    console.log(selectedDevice.value)
+    if (selectedDevice.value) {
+      if (input) {
+        input.removeListener()
+        input = null
+      }
+      // input = WebMidi.inputs[selectedDevice.value]
+      input = WebMidi.getInputById(selectedDevice.value)
+      if (input) {
+        let sampler: Tone.Sampler
+        sampler = samplerMezzoForte
+        // sampler.chain(reverb, Tone.Destination)
+        // Listen for a 'note on' message on all channels
+        input.addListener('noteon', function (e: NoteMessageEvent) {
+          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+          lastNote.value = currentNote
+          if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
+            if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
+            currentNotes.push(currentNote)
+          }
+          console.log("Received 'noteon' message (" + currentNote + ').')
+        })
+        // Listen for a 'note on' message on all channels
+        input.addListener('noteoff', function (e: NoteMessageEvent) {
+          let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
+          lastNote.value = ''
+          const index = currentNotes.indexOf(currentNote)
+          if (index > -1) {
+            currentNotes.splice(index, 1)
+          }
+        })
+      }
+    } else {
+      if (input) {
+        input.removeListener()
+        input = null
+      }
     }
-    input = WebMidi.inputs[selectedDevice.value]
-    if (input) {
-      let sampler: Tone.Sampler
-      sampler = samplerMezzoForte
-      // sampler.chain(reverb, Tone.Destination)
-      // Listen for a 'note on' message on all channels
-      input.addListener('noteon', function (e: NoteMessageEvent) {
-        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-        lastNote.value = currentNote
-        if (!currentNotes.includes(currentNote) && currentNotes.length < 4) {
-          if (samplerIsReady) sampler.triggerAttackRelease([currentNote], 4)
-          currentNotes.push(currentNote)
-        }
-        console.log("Received 'noteon' message (" + currentNote + ').')
-      })
-      // Listen for a 'note on' message on all channels
-      input.addListener('noteoff', function (e: NoteMessageEvent) {
-        let currentNote = e.note.name + (e.note.accidental ?? '') + e.note.octave
-        lastNote.value = ''
-        const index = currentNotes.indexOf(currentNote)
-        if (index > -1) {
-          currentNotes.splice(index, 1)
-        }
-      })
-    }
-  } else {
-    if (input) {
-      input.removeListener()
-      input = null
-    }
-  }
-})
+  })
+}
 </script>
 
 <template>
@@ -150,7 +153,7 @@ watch(selectedDevice, () => {
     <Compressor class="compressor" />
     <div class="device">
       <select class="form-control" id="device" v-model="selectedDevice">
-        <option :key="device.index" v-for="device in availableDevices" :value="device.index">
+        <option :key="device.index" v-for="device in availableDevices" :value="device.id">
           {{ device.name }}
         </option>
       </select>
