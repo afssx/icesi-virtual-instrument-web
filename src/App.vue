@@ -124,18 +124,10 @@ function onEnabled() {
               const durationInSeconds = 0.5 // Por ejemplo, una duración de 0.5 segundos
               //@ts-ignore
               const velocity = e.velocity
-
               // Obtiene el tiempo actual de AudioContext
               const currentTime = Tone.now()
-              const releaseTime = currentTime + durationInSeconds
               console.log({ durationInSeconds, currentTime, velocity })
-              sampler.triggerAttackRelease(
-                [currentNote],
-                durationInSeconds,
-                currentTime,
-                velocity
-                // releaseTime
-              )
+              sampler.triggerAttackRelease([currentNote], durationInSeconds, currentTime, velocity)
               currentNotes.push(currentNote)
             }
           }
@@ -204,8 +196,8 @@ function onEnabled() {
   width: 500px;
   height: 250px;
   position: absolute;
-  bottom: 10px;
-  right: 140px;
+  bottom: 18px;
+  right: 0px;
   background-size: contain;
   background-repeat: no-repeat;
 }
